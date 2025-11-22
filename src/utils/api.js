@@ -3,9 +3,9 @@ import axios from "axios";
 const API_KEY = "AIzaSyCQcD-KtkdjwtXycaXzjnE5ra8nKXAFCLM";
 const BASE_URL = "https://www.googleapis.com/youtube/v3";
 
-// =====================
-// FETCH VIDEOS (General Search)
-// =====================
+// ===================================================
+// FETCH VIDEOS (HOME PAGE / SEARCH RESULTS)
+// ===================================================
 export const fetchVideos = async (query = "youtube") => {
   try {
     const { data } = await axios.get(`${BASE_URL}/search`, {
@@ -67,11 +67,13 @@ export const fetchVideos = async (query = "youtube") => {
   }
 };
 
-// =====================
-// FETCH VIDEO DETAILS
-// =====================
+// ===================================================
+// FETCH VIDEO DETAILS (VIDEO PLAYER PAGE)
+// ===================================================
 export const fetchVideoDetails = async (id) => {
   try {
+    if (!id) return null;
+
     const { data } = await axios.get(`${BASE_URL}/videos`, {
       params: {
         part: "snippet,statistics,contentDetails",
@@ -109,19 +111,25 @@ export const fetchVideoDetails = async (id) => {
   }
 };
 
-// =====================
-// FETCH RELATED VIDEOS (Guaranteed 10)
-// =====================
+// ===================================================
+// FETCH RELATED VIDEOS (NO MORE 404 ERRORS)
+// ===================================================
 export const fetchRelatedVideos = async (id) => {
   try {
-    if (!id) return [];
+    // ID VALIDATION
+    if (!id || id === "undefined" || id === undefined) {
+      console.error("Invalid Video ID for related videos:", id);
+      return [];
+    }
 
+    // SEARCH RELATED VIDEOS
     const { data } = await axios.get(`${BASE_URL}/search`, {
       params: {
         part: "snippet",
         relatedToVideoId: id,
         type: "video",
-        maxResults: 50, // <- max allowed
+        maxResults: 50,
+        regionCode: "US", // prevents many 404 errors
         key: API_KEY,
       },
     });
@@ -132,6 +140,7 @@ export const fetchRelatedVideos = async (id) => {
     const videoIds = [...new Set(items.map((i) => i.id.videoId))].join(",");
     if (!videoIds) return [];
 
+    // GET FULL DETAILS
     const { data: videoDetails } = await axios.get(`${BASE_URL}/videos`, {
       params: {
         part: "snippet,statistics,contentDetails",
@@ -143,11 +152,12 @@ export const fetchRelatedVideos = async (id) => {
     let videos = videoDetails.items || [];
     if (!videos.length) return [];
 
-    // sort by most viewed = more relevant
+    // SORT BY MOST VIEWED
     videos = videos.sort(
       (a, b) => Number(b.statistics.viewCount) - Number(a.statistics.viewCount)
     );
 
+    // FETCH ALL CHANNEL ICONS
     const channelIds = [...new Set(videos.map((v) => v.snippet.channelId))].join(
       ","
     );
@@ -167,6 +177,7 @@ export const fetchRelatedVideos = async (id) => {
       });
     }
 
+    // RETURN MAX 10 RELATED VIDEOS
     return videos.slice(0, 10).map((video) => ({
       ...video,
       snippet: {
