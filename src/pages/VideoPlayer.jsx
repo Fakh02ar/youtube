@@ -108,6 +108,12 @@ export default function VideoPlayer() {
         setLoading(true);
         setRelatedLoaded(false);
 
+        // RESET STATES HERE (SAFE)
+        setComments([]);
+        setIsSubscribed(false);
+        setIsLiked(false);
+        setIsDisliked(false);
+
         const videoData = await fetchVideoDetails(id);
         setVideo(videoData);
 
@@ -115,7 +121,13 @@ export default function VideoPlayer() {
         setLoading(false);
 
         const relatedData = await fetchRelatedVideos(id);
-        setRelated(relatedData.length > 0 ? relatedData.slice(0, 12) : staticVideos);
+
+        setRelated(
+          relatedData.length > 0
+            ? relatedData.slice(0, 12)
+            : staticVideos
+        );
+
         setRelatedLoaded(true);
       } catch (error) {
         console.error("Error loading video:", error);
@@ -126,10 +138,6 @@ export default function VideoPlayer() {
     };
 
     loadVideo();
-    setComments([]);
-    setIsSubscribed(false);
-    setIsLiked(false);
-    setIsDisliked(false);
   }, [id]);
 
   const handleLike = () => {
@@ -151,9 +159,11 @@ export default function VideoPlayer() {
   return (
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        {/* MAIN VIDEO + INFO */}
+        
+        {/* MAIN VIDEO AREA */}
         <div className="w-full lg:w-[70%] xl:w-[70%]">
-          {/* Video Player */}
+
+          {/* VIDEO PLAYER */}
           <div className="relative pt-[56.25%] bg-black rounded-xl overflow-hidden shadow-lg">
             <iframe
               className="absolute top-0 left-0 w-full h-full"
@@ -163,7 +173,7 @@ export default function VideoPlayer() {
             ></iframe>
           </div>
 
-          {/* Video Title & Actions */}
+          {/* TITLE & ACTIONS */}
           {loading || !video ? (
             <div className="mt-6 space-y-4 animate-pulse">
               <div className="h-8 bg-gray-300 rounded w-full"></div>
@@ -176,7 +186,8 @@ export default function VideoPlayer() {
               </h1>
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-4">
-                {/* Channel Info */}
+
+                {/* CHANNEL INFO */}
                 <div className="flex items-center gap-3 flex-wrap">
                   <img
                     src={video.snippet.channelThumbnail || "https://via.placeholder.com/48"}
@@ -198,7 +209,7 @@ export default function VideoPlayer() {
                   </button>
                 </div>
 
-                {/* Like / Dislike / Share */}
+                {/* LIKE / SHARE */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex border border-gray-300 rounded-full overflow-hidden">
                     <button
@@ -219,6 +230,7 @@ export default function VideoPlayer() {
                       <FaThumbsDown className="text-lg" />
                     </button>
                   </div>
+
                   <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-5 py-2.5 rounded-full transition">
                     <FaShare className="text-lg" />
                     <span className="hidden sm:inline">Share</span>
@@ -226,7 +238,7 @@ export default function VideoPlayer() {
                 </div>
               </div>
 
-              {/* Views & Description */}
+              {/* DESCRIPTION */}
               <div className="mt-6 bg-gray-100 rounded-xl p-4 sm:p-5">
                 <p className="font-medium text-lg">
                   {video.statistics?.viewCount
@@ -239,7 +251,7 @@ export default function VideoPlayer() {
                 </p>
               </div>
 
-              {/* Comments Section */}
+              {/* COMMENTS */}
               <div className="mt-10">
                 <h2 className="font-bold text-xl mb-6">{comments.length} Comments</h2>
 
@@ -252,6 +264,7 @@ export default function VideoPlayer() {
                     onKeyPress={(e) => e.key === "Enter" && addComment()}
                     className="flex-1 border-b-2 border-gray-300 focus:border-black outline-none py-3 text-lg"
                   />
+
                   <button
                     onClick={addComment}
                     className="bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition mt-4 sm:mt-0"
@@ -283,11 +296,10 @@ export default function VideoPlayer() {
           )}
         </div>
 
-        {/* RELATED VIDEOS - Sidebar */}
+        {/* RELATED VIDEOS */}
         <div className="w-full lg:w-[30%] xl:w-[30%]">
           <h2 className="font-bold text-xl mb-4 hidden lg:block">Related Videos</h2>
 
-          {/* Loading Skeleton */}
           {!relatedLoaded &&
             [...Array(8)].map((_, i) => (
               <div key={i} className="flex gap-3 mb-5 animate-pulse">
@@ -299,7 +311,6 @@ export default function VideoPlayer() {
               </div>
             ))}
 
-          {/* Actual Related Videos */}
           {relatedLoaded &&
             related.map((v) => (
               <div
@@ -345,6 +356,7 @@ export default function VideoPlayer() {
               </div>
             ))}
         </div>
+
       </div>
     </div>
   );
