@@ -3,6 +3,90 @@ import { useEffect, useState } from "react";
 import { fetchVideoDetails, fetchRelatedVideos } from "../utils/api";
 import { FaThumbsUp, FaThumbsDown, FaShare } from "react-icons/fa";
 
+// STATIC VIDEOS (moved outside component to avoid ESLint warning)
+const staticVideos = [
+  {
+    id: "Ke90Tje7VS0",
+    title: "React JS - React Tutorial for Beginners",
+    channel: "Programming with Mosh",
+    thumbnail: "https://i.ytimg.com/vi/Ke90Tje7VS0/hqdefault.jpg",
+    views: "5.2M",
+    uploadedAt: "Jul 10, 2019",
+  },
+  {
+    id: "SqcY0GlETPk",
+    title: "React Course - Beginner's Tutorial for React JavaScript Library [2024]",
+    channel: "freeCodeCamp.org",
+    thumbnail: "https://i.ytimg.com/vi/SqcY0GlETPk/hqdefault.jpg",
+    views: "2.8M",
+    uploadedAt: "Mar 15, 2024",
+  },
+  {
+    id: "bMknfKXIFA8",
+    title: "React JS Full Course 2024 | Build and Deploy a Full Stack App",
+    channel: "JavaScript Mastery",
+    thumbnail: "https://i.ytimg.com/vi/bMknfKXIFA8/hqdefault.jpg",
+    views: "1.9M",
+    uploadedAt: "Jan 20, 2024",
+  },
+  {
+    id: "w7ejDZ8SWv8",
+    title: "React Hooks Tutorial - useState, useEffect, useReducer",
+    channel: "The Net Ninja",
+    thumbnail: "https://i.ytimg.com/vi/w7ejDZ8SWv8/hqdefault.jpg",
+    views: "980K",
+    uploadedAt: "Jun 5, 2021",
+  },
+  {
+    id: "RgKHfoW9z3g",
+    title: "Justin Bieber - Baby ft. Ludacris",
+    channel: "JustinBieberVEVO",
+    thumbnail: "https://i.ytimg.com/vi/kffacxfA7G4/hqdefault.jpg",
+    views: "1.1M",
+    uploadedAt: "Aug 12, 2022",
+  },
+  {
+    id: "j942wKiXFu8",
+    title: "React Context API Tutorial (Goodbye Props Drilling!)",
+    channel: "Fireship",
+    thumbnail: "https://i.ytimg.com/vi/j942wKiXFu8/hqdefault.jpg",
+    views: "890K",
+    uploadedAt: "Nov 8, 2023",
+  },
+  {
+    id: "DLX62G4lc44",
+    title: "Learn Redux Toolkit in 1 Hour (with React)",
+    channel: "PedroTech",
+    thumbnail: "https://i.ytimg.com/vi/DLX62G4lc44/hqdefault.jpg",
+    views: "620K",
+    uploadedAt: "Sep 18, 2023",
+  },
+  {
+    id: "4UZrsTqkcW4",
+    title: "Build and Deploy a Modern YouTube Clone with React + Tailwind",
+    channel: "Sonny Sangha",
+    thumbnail: "https://i.ytimg.com/vi/4UZrsTqkcW4/hqdefault.jpg",
+    views: "1.4M",
+    uploadedAt: "Oct 30, 2023",
+  },
+  {
+    id: "nTeuhbP7wd0",
+    title: "Ed Sheeran - Shape of You [Official Video]",
+    channel: "Ed Sheeran",
+    thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg",
+    views: "450K",
+    uploadedAt: "May 22, 2024",
+  },
+  {
+    id: "Qe3gffjF6I0",
+    title: "PSY - GANGNAM STYLE (강남스타일) M/V",
+    channel: "officialpsy",
+    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
+    views: "380K",
+    uploadedAt: "Apr 10, 2024",
+  },
+];
+
 export default function VideoPlayer() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,27 +102,6 @@ export default function VideoPlayer() {
 
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
-
-  // Fallback static videos
-  const staticVideos = [
-    {
-      id: "Ke90Tje7VS0",
-      title: "React JS - React Tutorial for Beginners",
-      channel: "Programming with Mosh",
-      thumbnail: "https://i.ytimg.com/vi/Ke90Tje7VS0/hqdefault.jpg",
-      views: "5.2M",
-      uploadedAt: "Jul 10, 2019",
-    },
-    {
-      id: "SqcY0GlETPk",
-      title: "React Course - Beginner's Tutorial for React JavaScript Library [2024]",
-      channel: "freeCodeCamp.org",
-      thumbnail: "https://i.ytimg.com/vi/SqcY0GlETPk/hqdefault.jpg",
-      views: "2.8M",
-      uploadedAt: "Mar 15, 2024",
-    },
-    // add remaining fallback videos here...
-  ];
 
   useEffect(() => {
     const loadVideo = async () => {
@@ -62,37 +125,44 @@ export default function VideoPlayer() {
         // Fetch related videos
         const relatedData = await fetchRelatedVideos(id);
 
-        const mappedRelated = (relatedData.length > 0
-          ? relatedData
-          : staticVideos
-        ).map((v) => ({
-          id: v.id?.videoId || v.id,
-          title: v.snippet?.title || v.title,
-          channel: v.snippet?.channelTitle || v.channel,
-          thumbnail:
-            v.snippet?.thumbnails?.medium?.url || v.thumbnail || "https://i.ytimg.com/vi/Ke90Tje7VS0/hqdefault.jpg",
-          views:
-            v.statistics?.viewCount
-              ? Number(v.statistics.viewCount).toLocaleString()
-              : v.views || "0",
-          uploadedAt:
-            v.snippet?.publishedAt
-              ? new Date(v.snippet.publishedAt).toLocaleDateString()
-              : v.uploadedAt || "",
-        }));
+        const mappedRelated = (relatedData.length > 0 ? relatedData : staticVideos).map(
+          (v) => ({
+            id: v.id?.videoId || v.id,
+            title: v.snippet?.title || v.title,
+            channel: v.snippet?.channelTitle || v.channel,
+            thumbnail:
+              v.snippet?.thumbnails?.medium?.url || v.thumbnail || "https://i.ytimg.com/vi/Ke90Tje7VS0/hqdefault.jpg",
+            views:
+              v.statistics?.viewCount
+                ? Number(v.statistics.viewCount).toLocaleString()
+                : v.views || "0",
+            uploadedAt:
+              v.snippet?.publishedAt
+                ? new Date(v.snippet.publishedAt).toLocaleDateString()
+                : v.uploadedAt || "",
+          })
+        );
 
         setRelated(mappedRelated);
         setRelatedLoaded(true);
       } catch (error) {
         console.error("Error loading video:", error);
-        setRelated(staticVideos);
+        const fallbackMapped = staticVideos.map((v) => ({
+          id: v.id,
+          title: v.title,
+          channel: v.channel,
+          thumbnail: v.thumbnail,
+          views: v.views,
+          uploadedAt: v.uploadedAt,
+        }));
+        setRelated(fallbackMapped);
         setLoading(false);
         setRelatedLoaded(true);
       }
     };
 
     loadVideo();
-  }, [id]);
+  }, [id]); // ✅ staticVideos is outside, so no ESLint warning
 
   const handleLike = () => {
     setIsLiked(!isLiked);
