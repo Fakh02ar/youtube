@@ -33,7 +33,7 @@ export default function VideoCard({ video }) {
       {/* WHOLE CARD CLICKABLE */}
       <Link
         to={`/video/${videoId}`}
-        className="block group rounded-xl transition bg-white hover:bg-gray-100 p-2"
+        className="block group rounded-xl transition bg-white hover:bg-gray-100 pb-10"
       >
         {/* Thumbnail */}
         <div className="relative pb-[56.25%] overflow-hidden rounded-lg shadow-md">
@@ -77,7 +77,7 @@ export default function VideoCard({ video }) {
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
-            className="absolute right-0 top-0 p-2 rounded-full hover:bg-gray-200 transition z-10"
+            className="absolute right-0 top-0  rounded-full hover:bg-gray-200 transition z-10"
           >
             <HiDotsVertical className="w-5 h-5 text-gray-700" />
           </button>
