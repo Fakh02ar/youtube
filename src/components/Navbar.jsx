@@ -56,7 +56,7 @@ export default function Navbar({ toggleSidebar, onSearch }) {
                 placeholder="Search"
                 value={voiceText}
                 onChange={(e) => setVoiceText(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-[16px] font-normal text-black placeholder:text-gray-600"
+                className="flex-1 bg-transparent outline-none text-[14px] font-normal text-black placeholder:text-gray-600"
               />
             </div>
             <button
