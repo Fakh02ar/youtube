@@ -116,7 +116,7 @@ export default function Navbar({ toggleSidebar, onSearch }) {
                   className="w-10 h-10 bg-[#f2f2f2] hover:bg-gray-200 rounded-full flex items-center justify-center ml-3"
                   onClick={() => setVoiceActive(true)}
                 >
-                  <img src="/mic.png" alt="mic" className="w-7" />
+                  <img src="/mic.png" alt="mic" className="w-6" />
                 </button>
               </div>
             </div>
