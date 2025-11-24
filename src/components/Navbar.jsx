@@ -99,7 +99,7 @@ export default function Navbar({ toggleSidebar, onSearch }) {
                   onChange={(e) => setVoiceText(e.target.value)}
                   className={`flex-1 bg-white text-black font-normal placeholder:text-gray-600 ${
                     inputActive ? "pl-12" : "pl-4"
-                  } pr-3 py-[5px] text-[18px] rounded-l-full outline-none border border-[#d1d1d1]
+                  } pr-3 py-[6.5px] text-[16px] rounded-l-full outline-none border border-[#d1d1d1]
                   focus:border-blue-600 focus:border focus:border`}
                 />
 
