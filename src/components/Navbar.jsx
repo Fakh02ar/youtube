@@ -41,7 +41,7 @@ export default function Navbar({ toggleSidebar, onSearch }) {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white text-black flex items-center justify-between px-6 h-16">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white text-black flex items-center justify-between px-6 h-14">
 
         {mobileSearch ? (
           <div className="flex w-full items-center gap-3 sm:hidden">

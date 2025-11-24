@@ -6,7 +6,7 @@ export default function VideoCard({ video }) {
   const videoId = video.id.videoId || video.id;
   const snippet = video.snippet || {};
 
-  // State for dropdown
+  // Dropdown menu state
   const [showMenu, setShowMenu] = useState(false);
 
   // Safe thumbnail
@@ -28,9 +28,14 @@ export default function VideoCard({ video }) {
   };
 
   return (
-    <div className="group w-full cursor-pointer relative">
-      {/* Video Link */}
-      <Link to={`/video/${videoId}`}>
+    <div className="w-full relative">
+
+      {/* WHOLE CARD CLICKABLE */}
+      <Link
+        to={`/video/${videoId}`}
+        className="block group rounded-xl transition bg-white hover:bg-gray-100 p-2"
+      >
+        {/* Thumbnail */}
         <div className="relative pb-[56.25%] overflow-hidden rounded-lg shadow-md">
           <img
             src={thumbnail}
@@ -38,77 +43,81 @@ export default function VideoCard({ video }) {
             className="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           />
         </div>
+
+        {/* Card content */}
+        <div className="flex mt-5 relative">
+
+          <img
+            src={channelThumbnail}
+            alt={snippet.channelTitle || "Channel"}
+            className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
+          />
+
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold line-clamp-2 pr-8">
+              {snippet.title || "No Title"}
+            </h3>
+
+            <p className="text-xs text-gray-600">
+              {snippet.channelTitle || "Unknown"}
+            </p>
+
+            <p className="text-xs text-gray-500">
+              {formatViews(video.statistics?.viewCount)} •{" "}
+              {snippet.publishedAt
+                ? new Date(snippet.publishedAt).toLocaleDateString()
+                : ""}
+            </p>
+          </div>
+
+          {/* Menu Button – IMPORTANT: stop the link click */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="absolute right-0 top-0 p-2 rounded-full hover:bg-gray-200 transition z-10"
+          >
+            <HiDotsVertical className="w-5 h-5 text-gray-700" />
+          </button>
+        </div>
       </Link>
 
-      {/* Card Content */}
-      <div className="flex mt-5 relative">
-        <img
-          src={channelThumbnail}
-          alt={snippet.channelTitle || "Channel"}
-          className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
-        />
+      {/* Dropdown Menu */}
+      {showMenu && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowMenu(false)}
+          />
 
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold line-clamp-2 pr-8">
-            {snippet.title || "No Title"}
-          </h3>
-          <p className="text-xs text-gray-600">{snippet.channelTitle || "Unknown"}</p>
-          <p className="text-xs text-gray-500">
-            {formatViews(video.statistics?.viewCount)} •{" "}
-            {snippet.publishedAt
-              ? new Date(snippet.publishedAt).toLocaleDateString()
-              : ""}
-          </p>
-        </div>
+          <div className="absolute right-0 top-12 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 overflow-hidden">
+            <button
+              onClick={() => {
+                alert("Saved to Library!");
+                setShowMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-4 transition"
+            >
+              <img src="/book.png" alt="bookmark" className="w-8" />
+              <span>Save to Library</span>
+            </button>
 
-        {/* 3-Dots Menu Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            setShowMenu(!showMenu);
-          }}
-          className="absolute right-0 top-0 p-2 rounded-full hover:bg-gray-200 transition z-10"
-        >
-          <HiDotsVertical className="w-5 h-5 text-gray-700" />
-        </button>
-
-        {/* Dropdown Menu */}
-        {showMenu && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShowMenu(false)}
-            />
-
-            {/* Menu */}
-            <div className="absolute right-0 top-10 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 overflow-hidden">
-              <button
-                onClick={() => {
-                  alert("Saved to Library!");
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-4 transition"
-              >
-                <span className="text-xl"><img src="/book.png" alt="bookmark" className="w-8" /></span>
-                <span>Save to Library</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  alert("Video hidden!");
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-4 transition border-t border-gray-200"
-              >
-                <span className="text-xl"><img src="/block.png" alt="block" className="w-8"/></span>
-                <span>Not interested</span>
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+            <button
+              onClick={() => {
+                alert("Video hidden!");
+                setShowMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-4 transition border-t border-gray-200"
+            >
+              <img src="/block.png" alt="block" className="w-8" />
+              <span>Not interested</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
