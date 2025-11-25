@@ -13,7 +13,7 @@ export default function App() {
       <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} />
 
-      <div className="pt-10 lg:pl-20 bg-white text-black min-h-screen">
+      <div className="pt-10 lg:pl-20 bg-white text-black min-h-screen"> 
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/video/:id" element={<VideoPlayer />} />

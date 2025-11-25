@@ -4,6 +4,53 @@ const API_KEY = "AIzaSyCQcD-KtkdjwtXycaXzjnE5ra8nKXAFCLM";
 const BASE_URL = "https://www.googleapis.com/youtube/v3";
 
 // ===================================================
+// 🔹 Helper: Fetch Full Video Details
+// ===================================================
+const getVideoDetails = async (ids) => {
+  try {
+    const { data } = await axios.get(`${BASE_URL}/videos`, {
+      params: {
+        part: "snippet,statistics,contentDetails",
+        id: ids,
+        key: API_KEY,
+      },
+    });
+
+    return data.items || [];
+  } catch (error) {
+    console.error("getVideoDetails Error:", error.response?.data || error);
+    return [];
+  }
+};
+
+// ===================================================
+// 🔹 Helper: Fetch Channel Thumbnails
+// ===================================================
+const getChannelThumbnails = async (channelIds) => {
+  try {
+    if (!channelIds) return {};
+
+    const { data } = await axios.get(`${BASE_URL}/channels`, {
+      params: {
+        part: "snippet",
+        id: channelIds,
+        key: API_KEY,
+      },
+    });
+
+    let map = {};
+    data.items.forEach((c) => {
+      map[c.id] = c.snippet.thumbnails.default.url;
+    });
+
+    return map;
+  } catch (error) {
+    console.error("getChannelThumbnails Error:", error.response?.data || error);
+    return {};
+  }
+};
+
+// ===================================================
 // FETCH VIDEOS (HOME PAGE / SEARCH RESULTS)
 // ===================================================
 export const fetchVideos = async (query = "youtube") => {
@@ -12,53 +59,27 @@ export const fetchVideos = async (query = "youtube") => {
       params: {
         part: "snippet",
         q: query,
-        maxResults: 20,
+        maxResults: 50,
         type: "video",
         key: API_KEY,
       },
     });
 
-    const videoItems = data.items || [];
-    if (!videoItems.length) return [];
-
-    const videoIds = videoItems.map((item) => item.id.videoId).join(",");
-    if (!videoIds) return [];
-
-    const { data: videoDetails } = await axios.get(`${BASE_URL}/videos`, {
-      params: {
-        part: "snippet,statistics,contentDetails",
-        id: videoIds,
-        key: API_KEY,
-      },
-    });
-
-    const items = videoDetails.items || [];
+    const items = data.items || [];
     if (!items.length) return [];
 
-    const channelIds = [...new Set(items.map((v) => v.snippet.channelId))].join(
-      ","
-    );
+    const videoIds = items.map((i) => i.id.videoId).join(",");
+    const videos = await getVideoDetails(videoIds);
+    if (!videos.length) return [];
 
-    let channelMap = {};
-    if (channelIds) {
-      const { data: channelData } = await axios.get(`${BASE_URL}/channels`, {
-        params: {
-          part: "snippet",
-          id: channelIds,
-          key: API_KEY,
-        },
-      });
+    const channelIds = [...new Set(videos.map((v) => v.snippet.channelId))].join(",");
+    const channelMap = await getChannelThumbnails(channelIds);
 
-      channelData.items.forEach((ch) => {
-        channelMap[ch.id] = ch.snippet.thumbnails.default.url;
-      });
-    }
-
-    return items.map((video) => ({
-      ...video,
+    return videos.map((v) => ({
+      ...v,
       snippet: {
-        ...video.snippet,
-        channelThumbnail: channelMap[video.snippet.channelId] || "",
+        ...v.snippet,
+        channelThumbnail: channelMap[v.snippet.channelId] || "",
       },
     }));
   } catch (error) {
@@ -74,35 +95,17 @@ export const fetchVideoDetails = async (id) => {
   try {
     if (!id) return null;
 
-    const { data } = await axios.get(`${BASE_URL}/videos`, {
-      params: {
-        part: "snippet,statistics,contentDetails",
-        id,
-        key: API_KEY,
-      },
-    });
-
-    const video = data.items?.[0] || null;
+    const videos = await getVideoDetails(id);
+    const video = videos[0];
     if (!video) return null;
 
-    const channelId = video.snippet.channelId;
-
-    const { data: channelData } = await axios.get(`${BASE_URL}/channels`, {
-      params: {
-        part: "snippet",
-        id: channelId,
-        key: API_KEY,
-      },
-    });
-
-    const channelThumbnail =
-      channelData.items?.[0]?.snippet?.thumbnails?.default?.url || "";
+    const channelMap = await getChannelThumbnails(video.snippet.channelId);
 
     return {
       ...video,
       snippet: {
         ...video.snippet,
-        channelThumbnail,
+        channelThumbnail: channelMap[video.snippet.channelId] || "",
       },
     };
   } catch (error) {
@@ -112,24 +115,19 @@ export const fetchVideoDetails = async (id) => {
 };
 
 // ===================================================
-// FETCH RELATED VIDEOS (NO MORE 404 ERRORS)
+// FETCH RELATED VIDEOS
 // ===================================================
 export const fetchRelatedVideos = async (id) => {
   try {
-    // ID VALIDATION
-    if (!id || id === "undefined" || id === undefined) {
-      console.error("Invalid Video ID for related videos:", id);
-      return [];
-    }
+    if (!id) return [];
 
-    // SEARCH RELATED VIDEOS
     const { data } = await axios.get(`${BASE_URL}/search`, {
       params: {
         part: "snippet",
         relatedToVideoId: id,
         type: "video",
         maxResults: 50,
-        regionCode: "US", // prevents many 404 errors
+        regionCode: "US",
         key: API_KEY,
       },
     });
@@ -138,51 +136,20 @@ export const fetchRelatedVideos = async (id) => {
     if (!items.length) return [];
 
     const videoIds = [...new Set(items.map((i) => i.id.videoId))].join(",");
-    if (!videoIds) return [];
+    let videos = await getVideoDetails(videoIds);
 
-    // GET FULL DETAILS
-    const { data: videoDetails } = await axios.get(`${BASE_URL}/videos`, {
-      params: {
-        part: "snippet,statistics,contentDetails",
-        id: videoIds,
-        key: API_KEY,
-      },
-    });
-
-    let videos = videoDetails.items || [];
-    if (!videos.length) return [];
-
-    // SORT BY MOST VIEWED
     videos = videos.sort(
       (a, b) => Number(b.statistics.viewCount) - Number(a.statistics.viewCount)
     );
 
-    // FETCH ALL CHANNEL ICONS
-    const channelIds = [...new Set(videos.map((v) => v.snippet.channelId))].join(
-      ","
-    );
+    const channelIds = [...new Set(videos.map((v) => v.snippet.channelId))].join(",");
+    const channelMap = await getChannelThumbnails(channelIds);
 
-    let channelMap = {};
-    if (channelIds) {
-      const { data: channelData } = await axios.get(`${BASE_URL}/channels`, {
-        params: {
-          part: "snippet",
-          id: channelIds,
-          key: API_KEY,
-        },
-      });
-
-      channelData.items.forEach((ch) => {
-        channelMap[ch.id] = ch.snippet.thumbnails.default.url;
-      });
-    }
-
-    // RETURN MAX 10 RELATED VIDEOS
-    return videos.slice(0, 10).map((video) => ({
-      ...video,
+    return videos.slice(0, 10).map((v) => ({
+      ...v,
       snippet: {
-        ...video.snippet,
-        channelThumbnail: channelMap[video.snippet.channelId] || "",
+        ...v.snippet,
+        channelThumbnail: channelMap[v.snippet.channelId] || "",
       },
     }));
   } catch (error) {

@@ -9,13 +9,13 @@ export default function Home() {
   useEffect(() => {
     const loadVideos = async () => {
       try {
-        const data = await fetchVideos("react tutorials");
+        const data = await fetchVideos("songs");
         setVideos(data);
       } catch (error) {
         console.error("Failed to fetch videos:", error);
       } finally {
         setLoading(false);
-      }
+      } 
     }; 
 
     loadVideos();
